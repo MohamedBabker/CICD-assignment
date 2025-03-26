@@ -1,0 +1,40 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  backend_flask:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint Python code
+        run: |
+          if [ -f .flake8 ] || [ -f setup.cfg ] || [ -f tox.ini ] || [ -f .pep8 ]; then
+            flake8 .
+          else
+            echo "No lint configuration found, skipping linting."
+          fi
+
+      - name: Run Python tests
+        run: |
+          if [ -f pytest.ini ] || ls tests; then
+            pytest
+          else
+            echo "No tests found, skipping tests."
+          fi
